@@ -71,6 +71,8 @@ Docs serve the weakest model that reads them, not the strong one auditing them. 
 
 Spawn three independent low-effort agents per block. Each gets the repo path, the verbatim block, and one concrete task the block would govern, and answers: "Would this block change what you produce for this task? KEEP or CUT, one reason." Majority wins, ties are KEEP, the verdict is final.
 
+Tell each panelist to answer the verdict only and never perform the task: a floor model handed a block will otherwise start executing it.
+
 Separately, verify every first-party symbol an example references against the real codebase. An example that calls a method that does not exist teaches a wrong API and is worse than absence. Record it as a cut whatever the panel says, and flag it, because that drift means nobody has checked the examples in a while.
 
 ### 6. Pointer and description audit
