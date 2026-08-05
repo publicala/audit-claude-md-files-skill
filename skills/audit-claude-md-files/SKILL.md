@@ -126,10 +126,11 @@ Present the full report before editing anything. Per finding: the verdict (cut, 
 
 After applying, re-resolve every pointer you touched. Close the report with before and after est. token totals per file, listing deferred (moved) tokens separately from deleted ones.
 
-## The trio
+## The quartet
 
 - `feed-claude-md-files` adds rules from observed patterns
 - `bake-claude-md-files` converts crystallized rules into tooling and removes the prose
 - `audit-claude-md-files` prunes and verifies what remains
+- `split-claude-md-files` moves what remains to the scope that reads it
 
-Run `feed` after a working session, `bake` once enough rules have accumulated to be worth automating, and `audit` when CLAUDE.md files have grown without review.
+Run `feed` after a working session, `bake` once enough rules have accumulated to be worth automating, `audit` when CLAUDE.md files have grown without review, and `split` after an audit leaves a resident file carrying rules that govern one area.
