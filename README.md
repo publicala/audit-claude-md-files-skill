@@ -2,7 +2,7 @@
 
 Claude Code skill - audits every loaded CLAUDE.md line by line and prunes what a session can derive on its own, with every cut backed by evidence.
 
-Completes the loop with its two siblings: [feed-claude-md-files](https://github.com/publicala/feed-claude-md-files-skill) adds prose rules from observed patterns, [bake-claude-md-files](https://github.com/publicala/bake-claude-md-files-skill) converts crystallized rules into tooling, and `audit` prunes and verifies what remains.
+The CLAUDE.md trio: [feed-claude-md-files](https://github.com/publicala/feed-claude-md-files-skill) adds rules from observed patterns, [bake-claude-md-files](https://github.com/publicala/bake-claude-md-files-skill) converts crystallized rules into tooling, and [audit-claude-md-files](https://github.com/publicala/audit-claude-md-files-skill) prunes and verifies what remains. Install all three from [publicala/claude-plugins](https://github.com/publicala/claude-plugins).
 
 ## How it works
 
@@ -16,19 +16,17 @@ Completes the loop with its two siblings: [feed-claude-md-files](https://github.
 
 ## Install
 
-The repo doubles as a plugin marketplace (required by Claude Code for `plugin install` to work). `marketplace.json` points to the plugin in this same repo.
+### Via Plugin Marketplace
+
+```
+/plugin marketplace add publicala/claude-plugins
+/plugin install audit-claude-md-files@publicala
+```
 
 ### Via skills.sh
 
 ```bash
 npx skills add publicala/audit-claude-md-files-skill
-```
-
-### Via Plugin Marketplace
-
-```
-/plugin marketplace add publicala/audit-claude-md-files-skill
-/plugin install audit-claude-md-files@publicala
 ```
 
 ### Manual
@@ -56,6 +54,7 @@ Run it in the project you want audited. The command depends on how you installed
 
 - [feed-claude-md-files](https://github.com/publicala/feed-claude-md-files-skill) - Surfaces patterns into new CLAUDE.md rules
 - [bake-claude-md-files](https://github.com/publicala/bake-claude-md-files-skill) - Converts CLAUDE.md rules into automated checks
+- [CLAUDE.md Guide](https://github.com/publicala/claude-md-guide) - Presentation slides about CLAUDE.md files
 - [CLAUDE.md docs](https://docs.anthropic.com/en/docs/claude-code/memory) - Official documentation
 
 ## License

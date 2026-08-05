@@ -108,8 +108,10 @@ Present the full report before editing anything. Per finding: the verdict (cut, 
 
 After applying, re-resolve every pointer you touched. Close the report with before and after est. token totals per file, listing deferred (moved) tokens separately from deleted ones.
 
-## Pairs with feed and bake
+## The trio
 
 - `feed-claude-md-files` adds rules from observed patterns
 - `bake-claude-md-files` converts crystallized rules into tooling and removes the prose
-- `audit` prunes and verifies what remains
+- `audit-claude-md-files` prunes and verifies what remains
+
+Run `feed` after a working session, `bake` once enough rules have accumulated to be worth automating, and `audit` when CLAUDE.md files have grown without review.
