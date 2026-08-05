@@ -47,7 +47,10 @@ cp skills/audit-claude-md-files/SKILL.md .claude/skills/audit-claude-md-files/
 
 ## Usage
 
-Invoke `/audit-claude-md-files` in the project you want audited.
+Run it in the project you want audited. The command depends on how you installed it:
+
+- **skills.sh / manual**: `/audit-claude-md-files`
+- **Plugin marketplace**: `/audit-claude-md-files:audit-claude-md-files` (plugin skills are namespaced as `/<plugin>:<skill>`)
 
 ## Resources
 

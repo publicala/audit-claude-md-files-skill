@@ -1,20 +1,40 @@
 ---
 name: audit-claude-md-files
 description: >
-  Audits every loaded CLAUDE.md line by line and prunes what a session can derive on its own, with every cut backed by evidence: enforcement checks, codebase counts, and low-effort agent panels. Completes the loop with feed-claude-md-files (adds rules) and bake-claude-md-files (converts rules to tooling).
+  Prunes loaded CLAUDE.md files down to the lines a fresh session cannot derive on its own, every cut backed by evidence. Use when CLAUDE.md files have grown without review, or after a stretch of feed-claude-md-files runs (feed adds rules, bake-claude-md-files bakes them into tooling, audit prunes what remains).
 user-invocable: true
 disable-model-invocation: true
 ---
 
-Read every CLAUDE.md the project loads: root, nested directories, and the referenced docs they point to. Judge each line against one question: **what mistake does a fresh session make without it?** If the answer is "none", the line is inventory, not instruction.
+Judge every line of every in-scope CLAUDE.md against one question: **what mistake does a session make without it?** If the answer is "none", the line is inventory, not instruction. The goal is not a shorter file. The goal is a file where every line changes behavior.
 
-Every resident line is paid for in every session (tokens ≈ characters / 4, label all figures "est."). The goal is not a shorter file. The goal is a file where every line changes behavior.
+Throughout the audit, "cut" means recording a cut verdict in the report. No file changes before approval, no exceptions.
+
+## Scope and load model
+
+Default scope is the current project: its root CLAUDE.md, nested CLAUDE.md files, and the rule files they point to. User-level and ancestor-directory files load in every project, so include them only when the user asks, and evaluate them against a session in an arbitrary project (codebase greps and CI checks do not apply to them). Exclude vendored code, build output, and worktree copies everywhere: from the inventory and from every grep.
+
+Not everything called "referenced" is deferred. Classify each file before judging it:
+
+- **Always resident**: the root CLAUDE.md, user-level and ancestor files, and anything they pull in with `@path` imports. An `@path` import costs full price in every session. Moving text behind one saves nothing.
+- **Scope-triggered**: nested CLAUDE.md files and path-scoped rule files load only for sessions working in their subtree. Judge their lines against a fresh session working there, not against every session.
+- **Deferred**: a plain markdown pointer loads nothing until an agent chooses to read the target. This is the only class where content is close to free.
+
+## Never cut
+
+Check every line against this list before anything else. A match is a KEEP and skips the rest of the audit, with one exception: a rule the formatter rewrites silently may still fall in step 3, because the tool guarantees it.
+
+- Safety prohibitions ("never force-push", "never run the seeder against a shared database")
+- Gotchas that contradict appearances (the call that silently no-ops, the flag that looks optional but is not). Greps come back clean precisely because the line works, so step 4 would misread these as derivable.
+- Conventions that differ from the framework or tool default
+- Precedence and routing clauses
+- Read-triggers for referenced docs
 
 ## The audit, in order
 
 ### 1. Inventory
 
-List each resident file with its est. token cost. Referenced docs load on demand and are close to free, so they are never a cut target on size alone. They enter the audit only through their pointers (step 6).
+List each in-scope file with its load class and est. token cost (label every figure "est."). Include equivalent rule files other agents consume (`.cursor/rules`, `AGENTS.md` and the like) in the inventory and the dedup pass, even though edits target CLAUDE.md files.
 
 ### 2. Derivability pass
 
@@ -25,36 +45,37 @@ Cut what a fresh session reconstructs with a few tool calls:
 - Directory layouts and file listings
 - Generic best practices ("write tests", "validate inputs", "use clear names")
 
-Test: delete the line and name the mistake a session now makes. No mistake, no line.
+Test: delete the line and name the mistake a session in the file's scope now makes. No mistake, no line. A line that fails the test but matters in one identifiable situation moves instead of dying (see "Extract, don't delete").
 
 ### 3. Enforcement verification
 
-Never trust a claim (yours or the file's) that "the linter handles this". Open the formatter config, the architecture tests, and the CI pipeline, and confirm. Then classify each rule by its feedback loop:
+Never trust a claim (yours or the file's) that "the linter handles this". Inspect every enforcement surface: formatter and linter configs, static analysis, architecture or convention tests, git hooks, CI workflows. Record which surfaces you checked per rule. Then classify each rule by its feedback loop:
 
-- **Auto-fixed at format time**: the formatter rewrites violations silently, so the prose costs context and prevents nothing. Cut it.
-- **Fails at suite time only** (architecture test, CI check): the prose can still pay for itself by preventing a write, fail, rewrite roundtrip. Keep it only when step 4 shows the surrounding code teaches the wrong pattern.
-- **Unenforced**: decide entirely on step 4. Consider proposing `bake-claude-md-files` for it.
+- **Auto-fixed at format time**: confirm the tool's file globs cover the affected paths and that it runs before code lands (hook or CI), then cut the prose. Violations get rewritten silently, so the line prevents nothing.
+- **Fails at suite time only** (architecture test, CI check): the prose can still pay for itself by preventing a write, fail, rewrite roundtrip. Leave the verdict open. Step 4 closes it: keep when neighbors teach the wrong pattern, cut when they teach the right one.
+- **Unenforced**: step 4 decides, and the rule is a candidate for `bake-claude-md-files`.
 
 Expect surprises in both directions: rules believed enforced that are not, and rules believed prose-only that a formatter already fixes.
 
 ### 4. Code-gradient measurement
 
-The codebase teaches conventions whether or not the doc repeats them. Count occurrences before judging:
+The codebase teaches conventions whether or not the doc repeats them. Grep before judging, scoped to the subtree the audited file governs and to first-party code only, and report numerator, denominator, and the exclusions used:
 
-- **Convention followed nearly everywhere**: the code teaches it. A new session copies its neighbors correctly without being told. Cut the line.
-- **Counter-examples are common, or the dominant pattern is the banned one**: neighbors teach the wrong thing, so the line is the only corrective. Keep it.
-
-Grep counts decide ("125 files import the banned class, 38 the right one"), impressions do not.
+- **Compliance at 90% or above**: the code teaches the convention, a session copies its neighbors correctly. Cut.
+- **Compliance at 70% or below**: neighbors teach the wrong pattern, so the line is the only corrective. Keep. (Example: 38 files import dates the required way, 125 the banned way. 23% compliant, KEEP.)
+- **In between**: borderline. Step 5 decides.
 
 ### 5. Capability-floor panel
 
-Docs serve the weakest model that reads them, not the strong one auditing them. For each borderline block, spawn one independent low-effort agent and ask: "You are working in this codebase. Does this block change the code you produce? Answer KEEP or CUT with one reason." One agent per block, no shared context between them. Accept the panel's verdicts unless one contradicts hard evidence from steps 3 and 4.
+Docs serve the weakest model that reads them, not the strong one auditing them. A borderline block is a heading section or standalone bullet that steps 3 and 4 left undecided. Panel only those, never the whole file.
 
-While judging examples, verify every symbol they reference against the real codebase. An example that calls a method that does not exist is worse than absence: it teaches a wrong API. Cut it regardless of the panel, and flag it, because that drift means nobody has checked the examples in a while.
+Spawn three independent low-effort agents per block. Each gets the repo path, the verbatim block, and one concrete task the block would govern, and answers: "Would this block change what you produce for this task? KEEP or CUT, one reason." Majority wins, ties are KEEP, the verdict is final.
+
+Separately, verify every first-party symbol an example references against the real codebase. An example that calls a method that does not exist teaches a wrong API and is worse than absence. Record it as a cut whatever the panel says, and flag it, because that drift means nobody has checked the examples in a while.
 
 ### 6. Pointer and description audit
 
-A pointer carries exactly two things: the trigger (when to read) and the path. Never a content summary. Summarizing the target loads its vocabulary into every session, which defeats the deferral.
+Resolve every pointer's target first and flag the broken ones. Then judge the phrasing: a pointer carries exactly two things, the trigger (when to read) and the path. Never a content summary. Summarizing the target loads its vocabulary into every session, which defeats the deferral.
 
 Discriminator: does this phrase help decide WHEN to read the file (routing key, keep) or does it describe what you WILL LEARN there (content summary, cut)?
 
@@ -66,37 +87,29 @@ See docs/payments.md for the retry flow, webhook signatures, refund windows, and
 Read docs/payments.md before touching payment or refund code.
 ```
 
+Exception: a fact stays in the pointer when the session needs it to pick WHICH target applies. A discriminator is routing, not summary.
+
 The same rule governs skill frontmatter descriptions: triggers and routing keywords stay, mechanics and step lists move to the body. Safety and precedence clauses stay in the description ("never mutates remote state", "OVERRIDES the global skill") because they change the invocation decision itself.
 
 ### 7. Deduplication
 
 State each fact once, at the smallest scope that covers its readers. When a rule repeats across files, keep the copy closest to where it applies, keep the load-bearing identifier resident (the helper name, the command), and defer the rationale to one referenced doc.
 
-## Never cut
-
-- Safety prohibitions ("never force-push", "never run the seeder against a shared database")
-- Gotchas that contradict appearances (the call that silently no-ops, the flag that looks optional but is not)
-- Conventions that differ from the framework or tool default
-- Precedence and routing clauses
-- Read-triggers for referenced docs
-
 ## Extract, don't delete
 
-Content needed only in a specific situation moves verbatim to a referenced file, leaving a one-line read-trigger behind ("read X before doing Y"). Deferral keeps the knowledge and drops the always-resident cost. Deletion is only for content that fails step 2 outright.
+Content needed only in a specific situation moves verbatim to a referenced file, leaving a one-line read-trigger behind ("read X before doing Y"). Reuse the project's existing referenced-doc location (detect it from current pointers) instead of inventing a new one. Deletion is only for content that fails step 2 outright.
 
 ## Approval and apply
 
-Present the full report before editing anything. Per finding: the verdict (cut, keep, move, defer), the exact text affected, and the evidence (config line, grep count, panel verdict). Only edit after approval.
+Present the full report before editing anything. Per finding: the verdict (cut, keep, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
 
-- **Checked-in files**: granular commits, one concern per commit, on a branch with a PR, so reviewers judge each cut in isolation.
+- **Checked-in files**: granular commits, one concern per commit, on a branch cut from the default branch with a clean tree (stop and ask if the tree is dirty), with a PR, so reviewers judge each cut in isolation.
 - **Local files** (user-level memory, `CLAUDE.local.md`): edit directly, back up first.
 
-Close the report with before and after est. token totals per file.
+After applying, re-resolve every pointer you touched. Close the report with before and after est. token totals per file, listing deferred (moved) tokens separately from deleted ones.
 
 ## Pairs with feed and bake
 
 - `feed-claude-md-files` adds rules from observed patterns
 - `bake-claude-md-files` converts crystallized rules into tooling and removes the prose
 - `audit` prunes and verifies what remains
-
-Run `audit` when CLAUDE.md files have grown without review, and after a long stretch of `feed` runs.
