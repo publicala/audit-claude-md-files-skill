@@ -75,7 +75,7 @@ Separately, verify every first-party symbol an example references against the re
 
 ### 6. Pointer and description audit
 
-Resolve every pointer's target first and flag the broken ones. Then judge the phrasing: a pointer carries exactly two things, the trigger (when to read) and the path. Never a content summary. Summarizing the target loads its vocabulary into every session, which defeats the deferral.
+Resolve every pointer's target first and flag the broken ones. Then judge the phrasing: a pointer carries exactly two things, the trigger (when to read) and the path. Never a content summary. Summarizing the target loads its vocabulary into every session, which defeats the deferral. Record these as rewrites.
 
 Discriminator: does this phrase help decide WHEN to read the file (routing key, keep) or does it describe what you WILL LEARN there (content summary, cut)?
 
@@ -95,13 +95,27 @@ The same rule governs skill frontmatter descriptions: triggers and routing keywo
 
 State each fact once, at the smallest scope that covers its readers. When a rule repeats across files, keep the copy closest to where it applies, keep the load-bearing identifier resident (the helper name, the command), and defer the rationale to one referenced doc.
 
+## Precise but generic
+
+Phrasing gets judged only after a line earns its keep. Every specific detail in a kept line (a class inventory, an enumerated list, a count) is either load-bearing, meaning generalizing it would change what a session does, or a liability that drifts as the code moves. When a kept line carries non-load-bearing specifics, record a **rewrite**: drop those specifics, keep the load-bearing identifiers verbatim, and change nothing else. A rewrite never widens scope, weakens the boundary, or adds advice, and every identifier it keeps gets verified against the codebase like any example symbol.
+
+Two senses of "generic" live in this skill. Step 2 cuts generic best practices because they pin no boundary. Generic here means phrased at the pattern level while still pinning one. When dropping the driftable specifics would leave nothing a session cannot derive, the line was inventory all along: cut, not rewrite. Precision earns the keep, genericity makes it last.
+
+```markdown
+<!-- Rewrite: the inventory drifts as validators are added, the boundary does not -->
+Our validators are EmailValidator, PhoneValidator, and VatValidator. Never write a new validator for a rule one of these already covers.
+
+<!-- After: same boundary, load-bearing path kept, inventory dropped -->
+Never write a new validator for a rule one in app/Validators already covers.
+```
+
 ## Extract, don't delete
 
 Content needed only in a specific situation moves verbatim to a referenced file, leaving a one-line read-trigger behind ("read X before doing Y"). Reuse the project's existing referenced-doc location (detect it from current pointers) instead of inventing a new one. Deletion is only for content that fails step 2 outright.
 
 ## Approval and apply
 
-Present the full report before editing anything. Per finding: the verdict (cut, keep, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
+Present the full report before editing anything. Per finding: the verdict (cut, keep, rewrite, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
 
 - **Checked-in files**: granular commits, one concern per commit, on a branch cut from the default branch with a clean tree (stop and ask if the tree is dirty), with a PR, so reviewers judge each cut in isolation.
 - **Local files** (user-level memory, `CLAUDE.local.md`): edit directly, back up first.
