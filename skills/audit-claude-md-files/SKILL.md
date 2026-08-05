@@ -47,6 +47,8 @@ Cut what a fresh session reconstructs with a few tool calls:
 
 Test: delete the line and name the mistake a session in the file's scope now makes. No mistake, no line. A line that fails the test but matters in one identifiable situation moves instead of dying (see "Extract, don't delete").
 
+The four classes above cut on sight. A cut for any other derivability claim needs a clean-context probe first: give one fresh low-effort agent a task the line governs in the file's scope, without the line, and record whether it derives the fact or makes the mistake. The probe's outcome is the verdict. The loaded auditor has read the line and cannot un-read it, so its own guess at what a fresh session derives is not evidence.
+
 ### 3. Enforcement verification
 
 Never trust a claim (yours or the file's) that "the linter handles this". Inspect every enforcement surface: formatter and linter configs, static analysis, architecture or convention tests, git hooks, CI workflows. Record which surfaces you checked per rule. Then classify each rule by its feedback loop:
