@@ -34,7 +34,7 @@ Check every line against this list before anything else. A match is a KEEP and s
 
 ### 1. Inventory
 
-List each in-scope file with its load class and est. token cost (label every figure "est."). Include equivalent rule files other agents consume (`.cursor/rules`, `AGENTS.md` and the like) in the inventory and the dedup pass, even though edits target CLAUDE.md files.
+List each in-scope file with its load class and est. token cost (label every figure "est."). Include equivalent rule files other agents consume (`.cursor/rules`, `AGENTS.md` and the like) in the inventory and the dedup pass, even though edits target CLAUDE.md files. Migrating a foreign-format rule file into the project's native format is never part of an audit apply: record it as a proposal and act only on explicit user approval.
 
 ### 2. Derivability pass
 
@@ -116,6 +116,8 @@ Never write a new validator for a rule one in app/Validators already covers.
 ## Extract, don't delete
 
 Content needed only in a specific situation moves verbatim to a referenced file, leaving a one-line read-trigger behind ("read X before doing Y"). A move must beat the pointer it leaves behind: content no longer than its read-trigger stays resident. Reuse the project's existing referenced-doc location (detect it from current pointers) instead of inventing a new one. Deletion is only for content that fails step 2 outright.
+
+Environment-conditional content is its own extract class: sentences that bind only in some execution environments (a cloud sandbox, CI, containerized local dev). No load mechanism triggers on environment, so path scoping cannot help. The pattern is one resident discriminator line per environment naming the trigger and the doc ("cloud session? read X before running anything"), with everything conditional moved to that doc verbatim. Classifying each sentence by the environments it governs is judgement the loaded auditor shortcuts: hand the section to one clean-context agent with the single question "which execution environments does each sentence govern", and treat every section with mixed answers as an extract candidate.
 
 ## Approval and apply
 
