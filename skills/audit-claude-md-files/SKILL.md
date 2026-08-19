@@ -44,10 +44,11 @@ Cut what a fresh session reconstructs with a few tool calls:
 - Stack and version inventories (lockfiles are the source of truth)
 - Directory layouts and file listings
 - Generic best practices ("write tests", "validate inputs", "use clear names")
+- Self-referential document metadata and biography: version stamps ("**Version**: 2026-08-07"), "last updated" lines, rename history, drift-tracking clauses between files ("if the spine moves forward and this file doesn't..."), and rules phrased against the past ("previously X, now Z"). Git is the history. When the history carries a load-bearing constraint, reframe it present tense: that is a rewrite, not a cut. A date survives only when it is itself the instruction a session must apply, not a stamp about the document.
 
 Test: delete the line and name the mistake a session in the file's scope now makes. No mistake, no line. A line that fails the test but matters in one identifiable situation moves instead of dying (see "Extract, don't delete").
 
-The four classes above cut on sight. A cut for any other derivability claim needs a clean-context probe first: give one fresh low-effort agent a task the line governs in the file's scope, without the line, and record whether it derives the fact or makes the mistake. The probe's outcome is the verdict. The loaded auditor has read the line and cannot un-read it, so its own guess at what a fresh session derives is not evidence.
+The five classes above cut on sight. A cut for any other derivability claim needs a clean-context probe first: give one fresh low-effort agent a task the line governs in the file's scope, without the line, and record whether it derives the fact or makes the mistake. The probe's outcome is the verdict. The loaded auditor has read the line and cannot un-read it, so its own guess at what a fresh session derives is not evidence.
 
 ### 3. Enforcement verification
 
