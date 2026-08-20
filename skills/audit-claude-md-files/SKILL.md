@@ -122,9 +122,19 @@ Content needed only in a specific situation moves verbatim to a referenced file,
 
 Environment-conditional content is its own extract class: sentences that bind only in some execution environments (a cloud sandbox, CI, containerized local dev). No load mechanism triggers on environment, so path scoping cannot help. The pattern is one resident discriminator line per environment naming the trigger and the doc ("cloud session? read X before running anything"), with everything conditional moved to that doc verbatim. Classifying each sentence by the environments it governs is judgement the loaded auditor shortcuts: hand the section to one clean-context agent with the single question "which execution environments does each sentence govern", and treat every section with mixed answers as an extract candidate.
 
+## Report delivery
+
+Before the inventory, ask one AskUserQuestion: does the user want the report as an interactive artifact or as plain text? When they pick the artifact, publish it as a live doc (`capabilities: {artifact: {}}`) so their in-page decisions persist and the session reads them back, and build it so they can decide while reading:
+
+- Every finding names its file by repo-relative path, never a shorthand or a directory nickname.
+- Each verdict row carries an approve checkbox, grouped per file, checked by default for recommended verdicts.
+- Each open question gets a free-text input.
+- Each file to be edited shows a diff of the proposed result against the current content. Draft the proposed files outside the repo (scratchpad) to generate these; the drafts double as the apply source.
+- A copy-decisions control serializes the checkbox and text state to the clipboard, as the fallback path back into the session.
+
 ## Approval and apply
 
-Present the full report before editing anything. Per finding: the verdict (cut, keep, rewrite, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
+Present the full report before editing anything. Per finding: the verdict (cut, keep, rewrite, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Approval arrives item by item: from the artifact's saved state (or its pasted export) when the report is an artifact, from AskUserQuestion otherwise. Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
 
 - **Checked-in files**: granular commits, one concern per commit, on a branch cut from the default branch with a clean tree (stop and ask if the tree is dirty), with a PR, so reviewers judge each cut in isolation.
 - **Local files** (user-level memory, `CLAUDE.local.md`): edit directly, back up first.
