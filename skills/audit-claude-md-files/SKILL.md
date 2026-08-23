@@ -128,9 +128,24 @@ Before the inventory, ask one AskUserQuestion: does the user want the report as 
 
 - Every finding names its file by repo-relative path, never a shorthand or a directory nickname.
 - Each verdict row carries an approve checkbox, grouped per file, checked by default for recommended verdicts.
-- Each open question gets a free-text input.
 - Each file to be edited shows a diff of the proposed result against the current content. Draft the proposed files outside the repo (scratchpad) to generate these; the drafts double as the apply source.
 - A copy-decisions control serializes the checkbox and text state to the clipboard, as the fallback path back into the session.
+
+## Building the decision artifact
+
+The artifact is a decision surface, not a document. The user often decides from a phone, so every item renders as a compact card: path, a one-sentence claim, one evidence line. Never paragraphs.
+
+- **Show the line, don't cite it.** Any claim about text the reader cannot see gets a collapsed "See the lines" block quoting the offending line verbatim in diff-removed styling, with the replacement (where one exists) in diff-added styling. The reader must never need the repo open to decide. Abridge very long lines with `[...]` and point at the full diff.
+- **A note field on every row.** Every decision row carries a collapsed free-text "Add note", including near-certain items. The user may have an opinion or question anywhere.
+- **Open-in-editor links.** Every file reference gets a small open link built on the user's editor URL scheme, detected from the machine (`$EDITOR`, installed apps): `zed://file{abs}:{line}`, `vscode://file{abs}:{line}`, `cursor://file{abs}:{line}`, `phpstorm://open?file={abs}&line={n}`. Always absolute paths, so the links hold from any worktree. Evidence references carrying file:line link the same way. Use `target="_blank"`, and stop click propagation on these links in a capture-phase handler, since they sit inside the checkbox label and a click must never toggle the row.
+- **Word-level diffs.** Pair adjacent removed/added runs (SequenceMatcher on tokens, similarity at or above 0.4) and highlight only the changed tokens. Render each diff line as a `display:block` span and join the spans with no separator: a newline between block spans inside a `<pre>` renders as a phantom blank line. Lint-enforced docs keep whole paragraphs on one physical line, so wrap with `white-space:pre-wrap`, `overflow-wrap:anywhere`, and a hanging indent.
+- **Questions as options.** Render each open question as radio options with a "recommended" chip plus a free-text field, mirroring AskUserQuestion. A bare textarea is only for questions with no concrete options.
+- **Sticky decision bar.** Section links, a changed-from-default counter, and the copy-decisions control stay reachable while scrolling.
+- **Triage chips.** Label each diff row by the review effort it needs (cuts-only rows are skimmable, rewrites are worth opening, adds carry new lines) and provide an expand-all-diffs control.
+- **Mobile pass.** Verify the page at around 390px width before publishing. Collapse method and other secondary sections by default.
+- **Republish safety.** Viewer decisions live in the served DOM. Before any republish, fetch the live artifact and compare its state against defaults. Carry any non-default state into the rebuilt HTML, or do not republish: republishing over live decisions destroys them.
+- **Generate, don't hand-edit.** Build the page from a data-plus-template script in the scratchpad so every iteration regenerates it whole.
+- **End with the trigger.** Close the page by telling the user the exact phrase that resumes the session, such as "read the artifact and apply".
 
 ## Approval and apply
 
