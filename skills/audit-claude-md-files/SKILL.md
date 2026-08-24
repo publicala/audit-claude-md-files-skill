@@ -131,6 +131,17 @@ Before the inventory, ask one AskUserQuestion: does the user want the report as 
 - Each file to be edited shows a diff of the proposed result against the current content. Draft the proposed files outside the repo (scratchpad) to generate these; the drafts double as the apply source.
 - A copy-decisions control as the fallback path back into the session.
 
+## Phase the decisions, not the audit
+
+A many-file audit produces more decisions than one sitting absorbs: objective corrections sit next to taste-level rewrites, and the review stalls where the opinions start. Keep the audit itself a single pass (verification is the expensive part, and findings interact: a false-claim fix changes the same lines a later trim rewrites). When the report carries more than about 20 decision rows, present and apply it in phases ordered by how objective the call is:
+
+1. **Correctness** — false and stale claims. Factual, near-zero controversy, fast to approve.
+2. **Dead weight** — deletions: orphan files, duplicate pointers, unreferenced scaffolding.
+3. **Compression** — rewrites and cuts for token count. The user's opinions concentrate here, so the phase gets their undivided attention and the full note-field treatment.
+4. **Structure** — moves, extractions, and new-file proposals: anything that changes where content lives.
+
+Each phase is its own decision surface and its own apply, in either delivery mode: an artifact report republishes in place (same URL, a phase roadmap showing position), a plain-text report presents one phase per message with its own approval round. Land the approved phase as its own branch and PR, and only then present the next one, with its diffs regenerated against the tree the previous phase produced. A phase-1 apply edits only the affected lines in place, leaving structure and wording untouched, so no diff ever mixes a factual fix with a taste rewrite. An open question rides with the phase whose decision it gates (a question blocking a deletion belongs to the deletions phase). Below the threshold, one page holds everything as usual.
+
 ## Building the decision artifact
 
 The artifact is a decision surface, not a document. The user often decides from a phone, so every item renders as a compact card: path, a one-sentence claim, one evidence line. Compact governs your own prose and never the source: text the user is approving (the line being cut, the rule being written) appears verbatim and whole, however long it runs.
@@ -150,7 +161,7 @@ The artifact is a decision surface, not a document. The user often decides from 
 
 ## Approval and apply
 
-Present the full report before editing anything. Per finding: the verdict (cut, keep, rewrite, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Approval arrives item by item: from the artifact's saved state (or its pasted export) when the report is an artifact, from AskUserQuestion otherwise. Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
+Present the full report before editing anything; a phased report satisfies this per phase, presenting each phase's findings in full before that phase's edits, with later phases following as earlier ones land. Per finding: the verdict (cut, keep, rewrite, move, defer), the exact text affected, and the evidence (surfaces checked, grep ratio, panel vote). Approval arrives item by item: from the artifact's saved state (or its pasted export) when the report is an artifact, from AskUserQuestion otherwise. Only edit after approval, and approval to edit is not approval to publish: confirm separately before creating commits, branches, or PRs.
 
 - **Checked-in files**: granular commits, one concern per commit, on a branch cut from the default branch with a clean tree (stop and ask if the tree is dirty), with a PR, so reviewers judge each cut in isolation.
 - **Local files** (user-level memory, `CLAUDE.local.md`): edit directly, back up first.
